@@ -1,0 +1,8 @@
+[BEGINVDF]
+Comment=${CMAKE_PROJECT_NAME} v${PROJECT_VERSION_CMAKE}
+BaseDir=vdf
+VDFName=${CMAKE_PROJECT_NAME}.vdf
+[FILES]
+System\Autorun\*.dll
+System\*.dll
+[ENDVDF]

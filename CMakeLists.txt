@@ -1,0 +1,65 @@
+cmake_minimum_required(VERSION 3.25)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
+# Project name and version
+set(PROJECT_VERSION_CMAKE "0.0.1")
+project(zVobTree VERSION "${PROJECT_VERSION_CMAKE}" LANGUAGES CXX)
+
+
+# Fetch union-api and gothic-api
+include(FetchContent)
+set(GOTHIC_API_G1  OFF)
+set(GOTHIC_API_G1A OFF)
+set(GOTHIC_API_G2  OFF)
+set(GOTHIC_API_G2A ON)
+FetchContent_Declare(
+        union-api
+        GIT_REPOSITORY https://gitlab.com/union-framework/union-api.git
+        GIT_TAG        21508ea42aad44c7c6fea4ae06ffc159ec85e69e
+)
+FetchContent_Declare(
+        gothic-api
+        GIT_REPOSITORY https://gitlab.com/union-framework/gothic-api.git
+        GIT_TAG        a6a66de7386f990c30fec41019d27053372058f2
+)
+FetchContent_MakeAvailable(union-api)
+FetchContent_MakeAvailable(gothic-api)
+
+
+# Build the plugin
+add_library(${CMAKE_PROJECT_NAME} SHARED)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE union_api_lib gothic_api)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE src)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/userapi)
+file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/**.cpp")
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SOURCES})
+
+
+# Set compiler options
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+        /permissive- /std:c++latest /Zc:__cplusplus /Zc:preprocessor /utf-8
+        /experimental:external /external:W0 /external:anglebrackets /external:templates-
+        /external:I ${CMAKE_BINARY_DIR}/_deps
+)
+
+
+# Setup vdf build
+install(FILES $<TARGET_RUNTIME_DLLS:${CMAKE_PROJECT_NAME}> "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.dll" TYPE BIN)
+
+configure_file("${CMAKE_SOURCE_DIR}/vdf/script.vs.in" "${CMAKE_BINARY_DIR}/script.vs")
+
+install(FILES $<TARGET_RUNTIME_DLLS:${CMAKE_PROJECT_NAME}> "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.dll" TYPE BIN)
+install(FILES "${CMAKE_BINARY_DIR}/script.vs" DESTINATION "${CMAKE_INSTALL_PREFIX}")
+
+configure_file("${CMAKE_SOURCE_DIR}/vdf/vdf.cmake.in" "${CMAKE_BINARY_DIR}/vdf.cmake")
+
+install(SCRIPT "${CMAKE_BINARY_DIR}/vdf.cmake")
+install(CODE "execute_process(COMMAND ${CMAKE_SOURCE_DIR}/vdf/GothicVDFS.exe /B \"${CMAKE_INSTALL_PREFIX}/script.vs\" WORKING_DIRECTORY \"${CMAKE_INSTALL_PREFIX}\")")
+
+add_custom_target(${CMAKE_PROJECT_NAME}_vdf ALL
+        COMMAND ${CMAKE_COMMAND} --install ${CMAKE_BINARY_DIR} --prefix ${CMAKE_INSTALL_PREFIX}
+        DEPENDS ${CMAKE_PROJECT_NAME}
+        COMMENT "Run install to build VDF")
