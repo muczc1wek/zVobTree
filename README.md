@@ -22,12 +22,12 @@ If you have found a bug in zVobTree, please [create an issue](https://github.com
 
 ### Discord
 
-You can contact the authors and maintainers on Discord:  
-[@muczc1wek](https://discordapp.com/users/667438896594026517)
+You can contact the authors and maintainers on Discord.
+Look for [@muczciwek](https://discordapp.com/users/667438896594026517).
 
 #### Gothic Modding Community
 
-Biggest community of international Gothic modders:  
+Biggest community of international Gothic modders.
 https://discord.gg/SJfHUv5SRW
 
 ## License
