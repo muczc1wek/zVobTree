@@ -13,7 +13,6 @@ jobs:
       upload-artifact-dll: release-dll
       upload-artifact-vdf: release-vdf
       project-version: ${{ github.ref_name }}
-      push-version-commit: true
   publish:
     name: Publish Release
     runs-on: windows-2022
