@@ -62,34 +62,45 @@ namespace GOTHIC_NAMESPACE {
 		return result;
 	}
 
-	// inserts vobtree into world tree
+	enum InsertVobTreeResult {
+		INSERT_FAILED,
+		INSERT_GLOBAL,
+		INSERT_PARENT
+	};
 
-	int InsertVobTree(zSTRING path, zSTRING parentName) 
+	// inserts vobtree into world tree
+	InsertVobTreeResult InsertVobTree(zSTRING path, zSTRING parentName) 
     {
 		zoptions->ChangeDir(DIR_WORLD);
 
 		zCWorld* world = ogame->GetWorld();
 
-		if (world)
+		if (!world)
 		{
-			zCVob* pParent = NULL;
-
-			if (parentName.Length() > 0)
-			{
-				pParent = world->SearchVobByName(parentName);
-			}
-
-			zCVob* vob = ogame->GetWorld()->MergeVobSubtree(path, pParent, zCWorld::zWLD_LOAD_MERGE_ADD);
-
-			if (auto wpVob = dynamic_cast<zCVobWaypoint*>(vob))
-			{
-				auto wp = zfactory->CreateWaypoint();
-				wp->Init(wpVob);
-				wp->SetName(wpVob->objectName);
-				ogame->GetWorld()->wayNet->InsertWaypoint(wp);
-			}
-			return vob != NULL;
+			return INSERT_FAILED;
 		}
-        return 0;
+
+		zCVob* pParent = NULL;
+
+		if (parentName.Length() > 0)
+		{
+			pParent = world->SearchVobByName(parentName);
+		}
+
+		zCVob* vob = ogame->GetWorld()->MergeVobSubtree(path, pParent, zCWorld::zWLD_LOAD_MERGE_ADD);
+
+		if (!vob)
+		{
+			return INSERT_FAILED;
+		}
+
+		if (auto wpVob = dynamic_cast<zCVobWaypoint*>(vob))
+		{
+			auto wp = zfactory->CreateWaypoint();
+			wp->Init(wpVob);
+			wp->SetName(wpVob->objectName);
+			ogame->GetWorld()->wayNet->InsertWaypoint(wp);
+		}
+		return pParent != NULL ? INSERT_PARENT : INSERT_GLOBAL;
 	}
 }
